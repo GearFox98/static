@@ -1,7 +1,7 @@
 import os, re
 
 from skel.routes import ROUTES
-from lib.parser import parse
+from utils.parser import parse
 
 # Variable line format!
 VARIABLE_FORMAT = re.compile("^[A-Za-z0-9_]+=\"$")
