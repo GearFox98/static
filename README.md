@@ -1,2 +1,2 @@
-# static
+# Static ⚡
 Static site generator project
