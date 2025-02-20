@@ -3,7 +3,6 @@
 # doing!
 
 import os
-from typing import Iterable
 import routes
 
 TEMP = "build/{0}.html"
@@ -27,28 +26,18 @@ def check_dirs() -> bool:
                     print(f"Folder: {d} was created successfully")
     return error
 
-# Build each page in a temporary folder, it is called in 'routes' script
-def build_content(pages: Iterable[str], content: Iterable[str]):
-    for page in pages:
-        index = 0
-        with open(f"build/{page}", 'w') as document:
-            document.writelines(content[0].split("\n"))
-        index += 1
-
 # Compile the whole site into dist folder
 def compile() -> bool:
-    for files in os.listdir("build"):
-        os.remove(f"build/{files}")
+    for files in os.listdir("dist"):
+        os.remove(f"dist/{files}")
     
     for _file in routes.ROUTES:
         with open(f"dist/{_file}.html", 'a') as stream:
             for row in open(HTML.format("header")):
                 stream.write(row)
-            stream.write("\n")
             
             for row in open(TEMP.format(_file)):
                 stream.write(f"{row}")
-            stream.write("\n")
             
             for row in open(HTML.format("footer")):
                 stream.write(row)
@@ -69,3 +58,5 @@ def build_site():
             print("There were some errors...")
         else:
             print("Site built successfully, check the 'dist' folder")
+
+build_site()

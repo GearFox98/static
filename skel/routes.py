@@ -3,7 +3,7 @@
 # Each page should have the name of its own route,
 # else it would lead to a dead end!
 
-from static import build_content
+from stutils import build_content
 
 # Import each page from 'pages' directory
 from pages import (
