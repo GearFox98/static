@@ -11,6 +11,10 @@ from pages import (
     about
 )
 
+BUILD_DIR = "build/{0}.html"
+HTML = "html/{0}.html"
+DATA = "data"
+
 ROUTES = [
     "index",
     "about"

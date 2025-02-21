@@ -3,10 +3,12 @@
 # doing!
 
 import os
-import routes
-
-TEMP = "build/{0}.html"
-HTML = "html/{0}.html"
+from routes import (
+    build,
+    ROUTES,
+    HTML,
+    BUILD_DIR
+    )
 
 # Checks directories in order to perform validation before building the site
 def check_dirs() -> bool:
@@ -28,30 +30,37 @@ def check_dirs() -> bool:
 
 # Compile the whole site into dist folder
 def compile() -> bool:
+    # Clean dist files
     for files in os.listdir("dist"):
         os.remove(f"dist/{files}")
     
-    for _file in routes.ROUTES:
+    for _file in ROUTES:
         with open(f"dist/{_file}.html", 'a') as stream:
             for row in open(HTML.format("header")):
                 stream.write(row)
             
-            for row in open(TEMP.format(_file)):
-                stream.write(f"{row}")
+            for row in open(BUILD_DIR.format(_file)):
+                stream.write(f"\t{row}")
             
             for row in open(HTML.format("footer")):
                 stream.write(row)
     return False
 
+# Build the whole site, this performs the directory checks,
+# generate the piece of HTML blocks form 'pages' dir,
+# lastly it sticks together the pages with the templates
 def build_site():
+    # Directory check and build
     print("Checking directories...")
     error = check_dirs()
+
+    # Batch process
     if error:
         print("Please, set up your files before building the site!")
         return
     else:
         print("Building temporary files...")
-        routes.build()
+        build()
         print("Building site...")
         error = compile()
         if error:
