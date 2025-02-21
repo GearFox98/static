@@ -1,2 +1,3 @@
 # Static ⚡
-Static site generator project
+A static web site generator inspired by React and written in Python
+
