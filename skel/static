@@ -1,8 +1,10 @@
+#!/usr/bin/env python3
 # This file has the function definitions for the tool
 # to work, don't mess here unless you know what you're
 # doing!
 
-import os, argparse
+import os
+from argparse import ArgumentParser, Namespace
 from routes import (
     build,
     ROUTES,
@@ -68,16 +70,24 @@ def build_site():
         else:
             print("Site built successfully, check the 'dist' folder")
 
+# CLI Prototype
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
+    parser = ArgumentParser(
         prog="Static",
-        usage="static <args>",
+        usage="static <options>",
         description="Static site generator"
     )
-    parser.add_argument("run")
-    parser.add_argument("-c", "--check", help="Checks if the project structure is correct, it generates the directories in case they're not.")
-    parser.add_argument("-b", "--build", help="Builds the site and places it into 'dist' folder. Check implied.")
+    parser.add_argument(
+        "command",
+        choices=["check","build"],
+        help='''Pass 'check' or 'build' arguments.\n
+        \rcheck - Checks if the project structure is correct, it generates the directories in case they're not.
+        \r'build' - Builds the site and places it into 'dist' folder. Check implied.''')
 
-    args = parser.parse_args()
+    args: Namespace = parser.parse_args()
 
-    print(args)
+    if args.command == "build":
+        build_site()
+    elif args.command == "check":
+        check_dirs()
+        print("Check done")
