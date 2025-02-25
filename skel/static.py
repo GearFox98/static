@@ -2,7 +2,7 @@
 # to work, don't mess here unless you know what you're
 # doing!
 
-import os
+import os, argparse
 from routes import (
     build,
     ROUTES,
@@ -68,4 +68,16 @@ def build_site():
         else:
             print("Site built successfully, check the 'dist' folder")
 
-build_site()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        prog="Static",
+        usage="static <args>",
+        description="Static site generator"
+    )
+    parser.add_argument("run")
+    parser.add_argument("-c", "--check", help="Checks if the project structure is correct, it generates the directories in case they're not.")
+    parser.add_argument("-b", "--build", help="Builds the site and places it into 'dist' folder. Check implied.")
+
+    args = parser.parse_args()
+
+    print(args)
