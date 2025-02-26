@@ -10,7 +10,6 @@ Clone this repository and uncompress the program. Copy the 'skel' folder where y
 ```bash
 $ static [command]
 ```
-<br />
 
 > ## **Commands available:**
 > **check**: checks the directory structure looking for missing directories. If there are some folders missing, this command will create them. The program stops if 'html' or 'pages' folders are not in the directory.<br /><br />
