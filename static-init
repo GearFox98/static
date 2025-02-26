@@ -13,7 +13,6 @@ parser = ArgumentParser(
 def init(path: str):
     if not os.path.exists(path):
         print(f"Creating {path}...")
-        os.mkdir(path)
     print("Copying files...")
     shutil.copytree(SKEL, path, dirs_exist_ok=True)
     print("Done! ⚡")
