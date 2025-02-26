@@ -8,6 +8,7 @@
 > - Added media function to format the result in a variable included in a page file.
 > - Added copy_data function to copy media files into 'dist' folder.
 > - Added 'media' folder in the check function in 'static' script.
+> - Redesigned HTML templates
 
 ### 1.0.0 - Init
 > Initiating the project:
