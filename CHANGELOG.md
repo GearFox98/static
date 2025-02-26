@@ -1,7 +1,9 @@
 # Static ⚡
 ### 1.0.1 - CLI Prototyping
 > Implementing CLI arguments in static, now you can run static utility from the command line without modifying the script.
-> - Script 'static.py' renamed to 'static' and added executions permissions. Now it is not mandatory to execute calling Python
+> - Script 'static.py' renamed to 'static' and added execution permissions. Now it is not mandatory to execute calling Python
+> - Script 'main.py' renamed to 'static-init' and added execution permissions.
+> - Setted a CLI argument in 'static-init' for copying the 'skel' dir into the path provided.
 
 ### 1.0.0 - Init
 > Initiating the project:
