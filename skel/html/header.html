@@ -1,18 +1,46 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!-- Each value that might change will be placed as a snake-case variable (predefined) -->
-        <title>It works! | name_of_the_page</title>
+        <title>It works!</title>
         <style>
+            html,
+            body {
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+
+            header {
+                background-color: #242424;
+                color: white;
+                padding: 15px;
+            }
+
+            footer {
+                background-color: #242424;
+                color: white;
+                width: 100%;
+                height: 50px;
+                text-align: center;
+                position: absolute;
+                bottom: 0;
+                left: 0;
+            }
+
+            .wrapper {
+                min-height: 100%;
+                position: relative;
+            }
+
             .card {
-                background-color: white;
-                border-radius: 5px;
-                border-color: #1266ac;
-                border-width: 3px;
-                margin-left: 50rem;
-                margin-top: 30rem;
-                padding: 10px;
-            };
+                padding: 5px;
+                padding-bottom: 100px;
+            }
         </style>
     </head>
     <body>
+        <div class="wrapper">
+            <header>
+                <h1>Static ⚡</h1>
+            </header>
