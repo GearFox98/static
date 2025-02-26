@@ -5,6 +5,7 @@
 
 import os
 from argparse import ArgumentParser, Namespace
+from stutils import exists, copy_data, clear
 from routes import (
     build,
     ROUTES,
@@ -14,10 +15,10 @@ from routes import (
 
 # Checks directories in order to perform validation before building the site
 def check_dirs() -> bool:
-    DIRS = ('build', 'dist', 'html', 'pages')
+    DIRS = ('build', 'dist', 'html', 'pages', 'data')
     error = False
     for d in DIRS:
-        if not os.path.exists(d):
+        if not exists(d):
             os.mkdir(d)
             match d:
                 case 'html':
@@ -34,7 +35,7 @@ def check_dirs() -> bool:
 def compile() -> bool:
     # Clean dist files
     for files in os.listdir("dist"):
-        os.remove(f"dist/{files}")
+        clear(f"dist/{files}")
     
     for _file in ROUTES:
         with open(f"dist/{_file}.html", 'a') as stream:
@@ -65,6 +66,7 @@ def build_site():
         build()
         print("Building site...")
         error = compile()
+        copy_data()
         if error:
             print("There were some errors...")
         else:
