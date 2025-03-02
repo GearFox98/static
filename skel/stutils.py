@@ -1,5 +1,23 @@
 import os, shutil
 from typing import Iterable
+from lxml import etree, html
+
+# Prettify HTML code
+def prettify(src: str, dest: str):
+    source = open(src, "r")
+
+    _html = ""
+    for line in source.readlines():
+        _html = _html + line.strip(" ").strip("\t").strip("\n").strip(" ").strip("\t")
+    document_root = html.fromstring(_html)
+    pretty = etree.tostring(document_root, encoding='unicode', pretty_print=True)
+
+    source.close()
+
+    with open(dest, "a") as destiny:
+        destiny.write("<!DOCTYPE html>\n")
+        for line in pretty:
+            destiny.write(line)
 
 def exists(path: str) -> bool:
     return os.path.exists(path)

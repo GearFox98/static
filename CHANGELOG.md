@@ -1,4 +1,7 @@
 # Static ⚡
+### 1.0.2 - Prettify
+> Added a 'prettify' function in `stutils.py` script and called it on `static-init`.  
+> Compile function on `static-init` now creates extra temporary files to prettify and removes them.
 ### 1.0.1 - CLI and Media Support
 > Implementing CLI arguments in static, now you can run static utility from the command line without modifying the script. There was added the folder 'media' for storing media files, such as pictures.
 > - Script 'static.py' renamed to 'static' and added execution permissions. Now it is not mandatory to execute calling Python

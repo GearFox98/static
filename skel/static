@@ -5,7 +5,7 @@
 
 import os
 from argparse import ArgumentParser, Namespace
-from stutils import exists, copy_data, clear
+from stutils import exists, copy_data, clear, prettify
 from routes import (
     build,
     ROUTES,
@@ -36,17 +36,19 @@ def compile() -> bool:
     # Clean dist files
     for files in os.listdir("dist"):
         clear(f"dist/{files}")
-    
+
     for _file in ROUTES:
-        with open(f"dist/{_file}.html", 'a') as stream:
+        with open(f"dist/{_file}", 'a') as stream:
             for row in open(HTML.format("header")):
                 stream.write(row)
-            
+
             for row in open(BUILD_DIR.format(_file)):
                 stream.write(f"\t{row}")
-            
+
             for row in open(HTML.format("footer")):
                 stream.write(row)
+        prettify(f"dist/{_file}", f"dist/{_file}.html")
+        os.remove(f"dist/{_file}")
     return False
 
 # Build the whole site, this performs the directory checks,
