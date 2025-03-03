@@ -9,7 +9,7 @@ Clone this repository and uncompress the program. Copy the 'skel' folder where y
 #### Debian
 If you have a Debian-like distro installed, you can install the _DEB_ package, available [here](https://github.com/GearFox98/static/releases/tag/1.0.1).
 ```bash
-$ dpkg -i static_1.0-1_all.deb
+$ dpkg -i static_1.0-x_all.deb
 ```
 
 ### Usage
