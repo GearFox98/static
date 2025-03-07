@@ -1,0 +1,23 @@
+body {
+    margin: 0%;
+    padding: 0%;
+}
+
+header {
+    background-color: #252525;
+    color: white;
+    width: 100%;
+    padding: 1em;
+}
+
+footer {
+    background-color: #252525;
+    color: white;
+    width: 100%;
+    padding-top: 1%;
+    text-align: center;
+}
+
+.bg-static-dark {
+    background-color: #252525;
+}
