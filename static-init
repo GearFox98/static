@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-import shutil, os
+import shutil, os, re, urllib.request
 from argparse import ArgumentParser, Namespace
+from zipfile import ZipFile
 
 BASE_DIR = os.path.dirname(__file__).strip(".")
 SKEL = os.path.join(BASE_DIR, 'skel')
@@ -15,18 +16,52 @@ def init(path: str):
         print(f"Creating {path}...")
     print("Copying files...")
     shutil.copytree(SKEL, path, dirs_exist_ok=True)
-    print("Done! ⚡")
+
+def get_bootstrap(path: str):
+    # prepare progressbar
+    def show_progress(block_num, block_size, total_size):
+        print(round(block_num * block_size / total_size *100,2), end="\r")
+
+    print("Getting Bootstrap...")
+    urllib.request.urlretrieve("https://github.com/twbs/bootstrap/releases/download/v5.3.3/bootstrap-5.3.3-dist.zip", f"{path}/bootstrap.zip", show_progress)
+
+    print("Unpacking Bootstrap into data...")
+    with ZipFile(f"{path}/bootstrap.zip", 'r') as ZIP:
+        ZIP.extractall(f"{path}/data")
+    
+    os.remove(f"{path}/bootstrap.zip")
+
+    with open(f"{path}/html/header.html", 'r') as stream:
+        page = stream.readlines()
+    
+    page[6] = '    <link href="data/bootstrap-5.3.3-dist/css/bootstrap.min.css" rel="stylesheet">'
+
+    with open(f"{path}/html/header.html", 'w') as stream:
+        stream.writelines(page)
+
+
 
 parser.add_argument(
-    "init",
+    "path",
     help = "Initialize a new project in the specified directory."
+)
+
+parser.add_argument(
+    "-b",
+    "--bootstrap",
+    action="store_true",
+    help="Gets Bootstrap offline"
 )
 
 args: Namespace = parser.parse_args()
 
-path = os.path.abspath(args.init)
+path = os.path.abspath(args.path)
 
 if path != BASE_DIR:
     init(path)
+    if args.bootstrap:
+        print('Boostrap offline set')
+        get_bootstrap(path)
+    print("Done! ⚡")
 else:
     print("Looks like you've set the base_dir of this Static, choose another location!")
