@@ -9,21 +9,21 @@ Clone this repository and uncompress the program. Copy the 'skel' folder where y
 #### Debian
 If you have a Debian-like distro installed, you can install the _DEB_ package, available [here](https://github.com/GearFox98/static/releases).
 ```bash
-# dpkg -i static_1.0-x_all.deb
+sudo dpkg -i static_1.0-x_all.deb
 ```
 
 #### Arch (AUR)
 If you have Arch installed, you can install the `static` from _AUR_
 ```bash
-$ git clone https://aur.archlinux.org/static-git.git
-$ cd static-git
-$ pkgbuild -i
+git clone https://aur.archlinux.org/static-git.git
+cd static-git
+pkgbuild -i
 ```
 
 ### Usage
 #### Starting a new project
 ```bash
-$ static-init <path> [options]
+static-init <path> [options]
 ```
 
 > #### **Options available:**
@@ -33,7 +33,7 @@ _Note_: If no `path` provided Static⚡ will assume `current directory` to initi
 
 #### Running the project
 ```bash
-$ static [command]
+static [command]
 ```
 
 > #### **Commands available:**
