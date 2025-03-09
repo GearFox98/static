@@ -21,10 +21,21 @@ $ pkgbuild -i
 ```
 
 ### Usage
+#### Starting a new project
+```bash
+$ static-init <path> [options]
+```
+
+> #### **Options available:**
+> **-b, --bootstrap**: gets a Bootstrap dist and installs it in the `data` folder in the project. Useful to code in places with unstable network
+
+_Note_: If no `path` provided Static⚡ will assume `current directory` to initialize the project.
+
+#### Running the project
 ```bash
 $ static [command]
 ```
 
-> ## **Commands available:**
+> #### **Commands available:**
 > **check**: checks the directory structure looking for missing directories. If there are some folders missing, this command will create them. The program stops if 'html' or 'pages' folders are not in the directory.<br /><br />
 > **build**: implies 'check', if there's no errors found, the program will generate the pages' content in a temporary folder and tailor the pieces in one file for each page in the 'dist' folder.
