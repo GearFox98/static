@@ -1,4 +1,10 @@
 # Static ⚡
+### 1.0-4 - Development Server
+> - Added a development server, it will be serving `dist` on _127.0.0.1:8001_ by default.
+> It can be launched with the command `run` in the `static` utility. If there's nothing in `dist` the site will be generated.
+> - Added a 404 - NotFound error page.
+
+# Static ⚡
 ### 1.0-3 - Bootsrap offline
 > Added a new parameter to get **Bootsrap** dist packages offline into `data` folder  
 > It will replace the `link` line of Bootstrap in `html/header.html` file with the distribution acquired. Useful for offline development.
