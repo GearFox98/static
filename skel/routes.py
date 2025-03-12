@@ -8,7 +8,8 @@ from stutils import build_content
 # Import each page from 'pages' directory
 from pages import (
     index,
-    about
+    about,
+    not_found
 )
 
 BUILD_DIR = "build/{0}.html"
@@ -17,7 +18,8 @@ DATA = "data"
 
 ROUTES = [
     "index",
-    "about"
+    "about",
+    "404"
 ]
 
 # Call build_content with putting the name of the pages (ROUTES) as first argument
@@ -27,6 +29,7 @@ def build():
         ROUTES,
         [
             index.get(),
-            about.get()
+            about.get(),
+            not_found.get()
         ]
     )
