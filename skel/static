@@ -3,7 +3,7 @@
 # to work, don't mess here unless you know what you're
 # doing!
 
-import os
+import os, sys, threading, webbrowser, static_server, time
 from argparse import ArgumentParser, Namespace
 from stutils import exists, copy_data, clear, prettify
 from routes import (
@@ -74,6 +74,41 @@ def build_site():
         else:
             print("Site built successfully, check the 'dist' folder")
 
+# Starts a thread with the development server started on 'dist' folder
+# and opens the browser in the direction set in 'static_server'.
+# If the 'dist' files doesn't exists, it calls build_site
+def run_dev():    
+    web_thread = threading.Thread(
+        target = static_server.serve,
+        name = "static-server",
+        daemon=True)
+    
+    if not os.path.exists("dist/index.html"):
+        build_site()
+    
+    web_thread.start()
+    webbrowser.open_new_tab(f"http://{static_server.ADDRESS}:{static_server.PORT}")
+
+    # CLI
+    time.sleep(3)
+    print ('''\nWelcome to the debug mode, you can build manually the site from here,
+           \rit will remain served until you issue \'exit\' command, to rebuild use \'build\'\n''')
+    try:
+        while True:
+            cli = str(input("[DEBUG⚡] > "))
+
+            match cli.lower():
+                case 'build':
+                    build_site()
+                case 'exit':
+                    print("Shutting down...")
+                    sys.exit(0)
+                case _:
+                    print(f"{cli} is not recognized as a command.")
+    except KeyboardInterrupt:
+        print("Shutting down...")
+        sys.exit(0)
+
 # CLI Prototype
 if __name__ == "__main__":
     parser = ArgumentParser(
@@ -83,15 +118,19 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "command",
-        choices=["check","build"],
+        choices=["check","build","run"],
         help='''Pass 'check' or 'build' arguments.\n
         \rcheck - Checks if the project structure is correct, it generates the directories in case they're not.
-        \r'build' - Builds the site and places it into 'dist' folder. Check implied.''')
+        \rbuild - Builds the site and places it into 'dist' folder. Check implied.
+        \rrun - Serves dist folder of the project, if the site is not built it calls build command''')
 
     args: Namespace = parser.parse_args()
 
-    if args.command == "build":
-        build_site()
-    elif args.command == "check":
-        check_dirs()
-        print("Check done")
+    match args.command:
+        case "build":
+            build_site()
+        case "check":
+            check_dirs()
+            print("Check done")
+        case "run":
+            run_dev()
