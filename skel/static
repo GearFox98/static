@@ -122,7 +122,7 @@ if __name__ == "__main__":
         help='''Pass 'check' or 'build' arguments.\n
         \rcheck - Checks if the project structure is correct, it generates the directories in case they're not.
         \rbuild - Builds the site and places it into 'dist' folder. Check implied.
-        \rrun - Serves dist folder of the project, if the site is not built it calls build command''')
+        \rrun - Serves dist folder of the project, if the site is not built it calls build command.''')
 
     args: Namespace = parser.parse_args()
 
