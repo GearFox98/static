@@ -3,6 +3,8 @@
 > - Added a development server, it will be serving `dist` on _127.0.0.1:8001_ by default.
 > It can be launched with the command `run` in the `static` utility. If there's nothing in `dist` the site will be generated.
 > - Added a 404 - NotFound error page.
+> - Added interactive console wile debugging/testing
+> - Moved `stutils` file to `static_lib/stutils.py`
 
 # Static ⚡
 ### 1.0-3 - Bootsrap offline
