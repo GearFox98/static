@@ -2,7 +2,10 @@
 
 import os, sys, shutil
 from lxml import etree, html
-from stutils import exists, clear
+from static_lib.stutils import (
+    exists,
+    clear
+    )
 from routes import build, ROUTES, HTML, BUILD_DIR
 
 # Checks directories in order to perform validation before building the site

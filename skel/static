@@ -5,7 +5,7 @@
 
 import sys, multiprocessing, webbrowser, subprocess
 from argparse import ArgumentParser, Namespace
-from stutils import print_shutdown
+from static_lib.stutils import print_shutdown, exists, is_empty
 from builder import site_build, check_dirs
 from static_server import (
     ADDRESS,
@@ -51,8 +51,23 @@ def run_dev():
                 \r---------------
                 \rListening on port {PORT}
 
-                \rOpen your browser in: http://{ADDRESS}:{PORT}
+                \rOpen your browser in: http://{ADDRESS}:{PORT} if it didn't open automatically
                 \rHit CTRL+C to close the server.
+            ''')
+        
+        if not exists("dist") or is_empty("dist"):
+            print("No dist made, building...")
+            subprocess.call(["python3", "builder.py"])
+
+        webbrowser.open_new_tab(f"http://{ADDRESS}:{PORT}")
+
+        print('''
+            \rEntering interactive console mode
+            \r--------------------
+            \rCommands:
+            \rrebuild - Once you have made changes in your files you might rebuild them and press F5 in the browser.
+            \rstatus - Shows the status of the server.
+            \rexit - Shutsdown the session
             ''')
 
         while True:
@@ -79,6 +94,7 @@ def run_dev():
                     print(f"{cli} is not recognized as a command.")
     except KeyboardInterrupt:
         _daemon.terminate()
+        print("\n")
         while _daemon.is_alive():
             print_shutdown()
         print("\n")

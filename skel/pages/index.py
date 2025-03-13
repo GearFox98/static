@@ -1,4 +1,4 @@
-from stutils import media
+from static_lib.stutils import media
 
 var = "It works!"
 
