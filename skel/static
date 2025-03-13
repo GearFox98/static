@@ -3,53 +3,15 @@
 # to work, don't mess here unless you know what you're
 # doing!
 
-import os, sys, threading, webbrowser, static_server, time
+import sys, multiprocessing, webbrowser, subprocess
 from argparse import ArgumentParser, Namespace
-from stutils import exists, copy_data, clear, prettify
-from routes import (
-    build,
-    ROUTES,
-    HTML,
-    BUILD_DIR
+from stutils import print_shutdown
+from builder import site_build, check_dirs
+from static_server import (
+    ADDRESS,
+    PORT,
+    serve
     )
-
-# Checks directories in order to perform validation before building the site
-def check_dirs() -> bool:
-    DIRS = ('build', 'dist', 'html', 'pages', 'data')
-    error = False
-    for d in DIRS:
-        if not exists(d):
-            os.mkdir(d)
-            match d:
-                case 'html':
-                    print("Warning: html directory is empty, make sure to provide a 'header.html' and 'footer.html' file")
-                    error = True
-                case 'pages':
-                    print("Info: the pages directory is empty, define some pages and link them in the 'routes.py' script")
-                    error = True
-                case _:
-                    print(f"Folder: {d} was created successfully")
-    return error
-
-# Compile the whole site into dist folder
-def compile() -> bool:
-    # Clean dist files
-    for files in os.listdir("dist"):
-        clear(f"dist/{files}")
-
-    for _file in ROUTES:
-        with open(f"dist/{_file}", 'a') as stream:
-            for row in open(HTML.format("header")):
-                stream.write(row)
-
-            for row in open(BUILD_DIR.format(_file)):
-                stream.write(f"\t{row}")
-
-            for row in open(HTML.format("footer")):
-                stream.write(row)
-        prettify(f"dist/{_file}", f"dist/{_file}.html")
-        os.remove(f"dist/{_file}")
-    return False
 
 # Build the whole site, this performs the directory checks,
 # generate the piece of HTML blocks form 'pages' dir,
@@ -64,50 +26,64 @@ def build_site():
         print("Please, set up your files before building the site!")
         return
     else:
-        print("Building temporary files...")
-        build()
-        print("Building site...")
-        error = compile()
-        copy_data()
-        if error:
-            print("There were some errors...")
-        else:
+        success = site_build()
+        if success:
             print("Site built successfully, check the 'dist' folder")
+        else:
+            print("There were some errors...")
+
 
 # Starts a thread with the development server started on 'dist' folder
 # and opens the browser in the direction set in 'static_server'.
 # If the 'dist' files doesn't exists, it calls build_site
-def run_dev():    
-    web_thread = threading.Thread(
-        target = static_server.serve,
-        name = "static-server",
-        daemon=True)
-    
-    if not os.path.exists("dist/index.html"):
-        build_site()
-    
-    web_thread.start()
-    webbrowser.open_new_tab(f"http://{static_server.ADDRESS}:{static_server.PORT}")
+def run_dev():
+    _daemon = multiprocessing.Process(
+        target=serve,
+        name="static-server",
+        daemon=True
+    )
 
-    # CLI
-    time.sleep(3)
-    print ('''\nWelcome to the debug mode, you can build manually the site from here,
-           \rit will remain served until you issue \'exit\' command, to rebuild use \'build\'\n''')
     try:
+        _daemon.start()
+    
+        print(f'''Running web server...
+                \rALERT: this is a development server, don't use it for production!
+                \r---------------
+                \rListening on port {PORT}
+
+                \rOpen your browser in: http://{ADDRESS}:{PORT}
+                \rHit CTRL+C to close the server.
+            ''')
+
         while True:
             cli = str(input("[DEBUG⚡] > "))
 
             match cli.lower():
-                case 'build':
-                    build_site()
+                case 'rebuild':
+                    print("Rebuilding...")
+                    subprocess.call(["python3", "builder.py"])
+
                 case 'exit':
-                    print("Shutting down...")
+                    _daemon.terminate()
+                    while _daemon.is_alive():
+                        print_shutdown()
+                    print("\n")
                     sys.exit(0)
+                case 'status':
+                    print(f'''Process {_daemon.name}:
+                        \rIs alive: {_daemon.is_alive()}.
+                        \rIs daemon: {_daemon.daemon}.
+                        \rPID: {_daemon.pid}.
+                    ''')
                 case _:
                     print(f"{cli} is not recognized as a command.")
     except KeyboardInterrupt:
-        print("Shutting down...")
+        _daemon.terminate()
+        while _daemon.is_alive():
+            print_shutdown()
+        print("\n")
         sys.exit(0)
+    
 
 # CLI Prototype
 if __name__ == "__main__":

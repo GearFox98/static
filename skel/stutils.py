@@ -1,24 +1,8 @@
-import os, shutil
+import os, shutil, time
 from typing import Iterable
-from lxml import etree, html
+from http.server import BaseHTTPRequestHandler
 
-# Prettify HTML code
-def prettify(src: str, dest: str):
-    source = open(src, "r")
-
-    _html = ""
-    for line in source.readlines():
-        _html = _html + line.strip(" ").strip("\t").strip("\n").strip(" ").strip("\t")
-    document_root = html.fromstring(_html)
-    pretty = etree.tostring(document_root, encoding='unicode', pretty_print=True)
-
-    source.close()
-
-    with open(dest, "a") as destiny:
-        destiny.write("<!DOCTYPE html>\n")
-        for line in pretty:
-            destiny.write(line)
-
+# region path
 def exists(path: str) -> bool:
     return os.path.exists(path)
 
@@ -38,16 +22,44 @@ def clear(path: str):
         shutil.rmtree(path)
     else:
         os.remove(path)
+# endregion
 
-# Copy static data into dist folder
-def copy_data():
-    SRC = "data"
-    DEST = "dist/data"
-    if exists(DEST):
-        source = os.listdir(SRC)
-        destination = os.listdir(DEST)
-        for obj in source:
-            if not obj in destination:
-                shutil.copytree(SRC, DEST, dirs_exist_ok=True)
-    else:
-        shutil.copytree(SRC, DEST, dirs_exist_ok=True)
+# region server_related
+class StaticHTTPRequestHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == '/':
+            self.path = '/dist/index.html'
+        else:
+            self.path = f'/dist{self.path}'
+        try:
+            file_to_open = open(self.path[1:]).read()
+            self.send_response(200)
+        except:
+            if os.path.exists("dist/404.html"):
+                file_to_open = open("dist/404.html").read()
+            else:
+                file_to_open = "File not found"
+            self.send_response(404)
+        self.end_headers()
+        self.wfile.write(bytes(file_to_open, 'utf-8'))
+    
+    def log_message(self, format, *args):
+        if not os.path.exists("logs"):
+            os.mkdir("logs")
+        with open("logs/debug-server.log", 'a') as stream:
+            message = format % args
+            stream.write("%s - - [%s] %s\n" %
+                         (self.address_string(),
+                          self.log_date_time_string(),
+                          message.translate(self._control_char_table)))
+        return
+
+def print_shutdown():
+    print("\rShutting down.", end="")
+    time.sleep(0.2)
+    print("\rShutting down..", end="")
+    time.sleep(0.2)
+    print("\rShutting down...", end="")
+    time.sleep(0.2)
+
+# endregion
