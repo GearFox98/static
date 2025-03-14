@@ -55,7 +55,7 @@ def compile() -> bool:
                 stream.write(row)
 
             for row in open(BUILD_DIR.format(_file)):
-                stream.write(f"\t{row}")
+                stream.write(f"{row}")
 
             for row in open(HTML.format("footer")):
                 stream.write(row)

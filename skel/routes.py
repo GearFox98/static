@@ -3,7 +3,7 @@
 # Each page should have the name of its own route,
 # else it would lead to a dead end!
 
-from static_lib.stutils import build_content
+from static_lib.stutils import join
 
 # Import each page from 'pages' directory
 from pages import (
@@ -25,7 +25,7 @@ ROUTES = [
 # Call build_content with putting the name of the pages (ROUTES) as first argument
 # and the second must be the content of the page generated from their respective functions.
 def build():
-    build_content(
+    join(
         ROUTES,
         [
             index.get(),

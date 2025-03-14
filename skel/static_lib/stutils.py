@@ -8,12 +8,6 @@ def exists(path: str) -> bool:
 def is_empty(path: str) -> bool:
     return False if len(os.listdir(path)) == 0 else True
 
-# Build each page in a temporary folder, it is called in 'routes' script
-def build_content(pages: Iterable[str], content: Iterable[str]):
-    for i in range(len(pages)):
-        with open(f"build/{pages[i]}.html", 'w') as document:
-            document.writelines(content[i])
-
 # Media refactor
 def media(res: str):
     return f"\"data/{res}\""
@@ -24,9 +18,14 @@ def clear(path: str):
         shutil.rmtree(path)
     else:
         os.remove(path)
-# endregion
 
-# region server_related
+# Build each page in a temporary folder, it is called in 'routes' script
+def join(pages: Iterable[str], content: Iterable[str]):
+    for i in range(len(pages)):
+        with open(f"build/{pages[i]}.html", 'w') as document:
+            document.writelines(content[i])
+
+# endregion
 
 def print_shutdown():
     print("\rShutting down.", end="")
@@ -35,5 +34,3 @@ def print_shutdown():
     time.sleep(0.2)
     print("\rShutting down...", end="")
     time.sleep(0.2)
-
-# endregion
