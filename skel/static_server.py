@@ -28,6 +28,10 @@ class StaticHTTPRequestHandler(BaseHTTPRequestHandler):
             self.send_response(404)
         self.end_headers()
         self.wfile.write(bytes(file_to_open, 'utf-8'))
+
+class QuietHTTPRequestHandler(StaticHTTPRequestHandler):
+    def do_GET(self):
+        return super().do_GET()
     
     def log_message(self, format, *args):
         if not os.path.exists("logs"):
@@ -40,12 +44,12 @@ class StaticHTTPRequestHandler(BaseHTTPRequestHandler):
                           message.translate(self._control_char_table)))
         return
 
-def serve(interactive = True):
+def serve(interactive: bool):
     try:
         if interactive:
-            httpd = HTTPServer((ADDRESS, PORT), StaticHTTPRequestHandler)
+            httpd = HTTPServer((ADDRESS, PORT), QuietHTTPRequestHandler)
         else:
-            httpd = HTTPServer((ADDRESS, PORT), BaseHTTPRequestHandler)
+            httpd = HTTPServer((ADDRESS, PORT), StaticHTTPRequestHandler)
         httpd.serve_forever()
     except KeyboardInterrupt:
         httpd.shutdown()
@@ -61,4 +65,4 @@ if __name__ == "__main__":
                 \rOpen your browser in: http://{ADDRESS}:{PORT}
                 \rHit CTRL+C to close the server.
             ''')
-    serve()
+    serve(False)

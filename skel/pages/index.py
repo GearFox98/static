@@ -11,7 +11,7 @@ def get():
             <p>Go change the code in pages. Keep it simple and stable!</p>
         </div>
         <div class="dgrid gap-2">
-            <a class="btn btn-warning" href="https://gearfox98.github.com/static/wiki" target="_blank" rel="noopener">Documentation</a>
+            <a class="btn btn-warning" href="https://github.com/GearFox98/static/wiki" target="_blank" rel="noopener">Documentation</a>
             <a class="btn btn-secondary" href="about.html">About page</a>
         </div>
     </div>
