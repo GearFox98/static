@@ -40,9 +40,12 @@ class StaticHTTPRequestHandler(BaseHTTPRequestHandler):
                           message.translate(self._control_char_table)))
         return
 
-def serve():
+def serve(interactive = True):
     try:
-        httpd = HTTPServer((ADDRESS, PORT), StaticHTTPRequestHandler)
+        if interactive:
+            httpd = HTTPServer((ADDRESS, PORT), StaticHTTPRequestHandler)
+        else:
+            httpd = HTTPServer((ADDRESS, PORT), BaseHTTPRequestHandler)
         httpd.serve_forever()
     except KeyboardInterrupt:
         httpd.shutdown()

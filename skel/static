@@ -33,12 +33,22 @@ def build_site():
             print("There were some errors...")
 
 
+# region Services
+# Services implemented by the interface of static tool
+# --------------------
+# Interactive services will provide a CLI to perform manual
+# builds and status check in the server service.
+# Static services will run unattended builds
+# --------------------
+# region Interactive
 # Starts a thread with the development server started on 'dist' folder
 # and opens the browser in the direction set in 'static_server'.
-# If the 'dist' files doesn't exists, it calls build_site
+# If the 'dist' files doesn't exists, it calls build_site.
+# Interactive mode
 def run_dev_interactive():
     _server_daemon = multiprocessing.Process(
         target=serve,
+        args=[True],
         name="static-server",
         daemon=True
     )
@@ -99,6 +109,51 @@ def run_dev_interactive():
             print_shutdown()
         print("\n")
         sys.exit(0)
+# endregion
+
+# region Static
+def run_dev():
+    _server_daemon = multiprocessing.Process(
+        target=serve,
+        args=[False],
+        name="static-server",
+        daemon=True
+    )
+    _watch_daemon = multiprocessing.Process(
+        target=watch,
+        name="static-watch",
+        daemon=True
+    )
+
+    try:  
+        print(f'''Running web server...
+                \rALERT: this is a development server, don't use it for production!
+                \r---------------
+                \rListening on port {PORT}
+
+                \rOpen your browser in: http://{ADDRESS}:{PORT} if it didn't open automatically
+                \rHit CTRL+C to close the server.
+            ''')
+        
+        if not exists("dist") or is_empty("dist"):
+            print("No dist made, building...")
+            subprocess.call(["python3", "builder.py"])
+        
+        _server_daemon.start()
+        _watch_daemon.start()
+
+        webbrowser.open_new_tab(f"http://{ADDRESS}:{PORT}")
+
+        
+    except KeyboardInterrupt:
+        _server_daemon.terminate()
+        _watch_daemon.terminate()
+        print("\n")
+        while _server_daemon.is_alive() or _watch_daemon.is_alive():
+            print_shutdown()
+        print("\n")
+        sys.exit(0)
+# endregion
     
 
 # CLI Prototype
@@ -115,6 +170,13 @@ if __name__ == "__main__":
         \rcheck - Checks if the project structure is correct, it generates the directories in case they're not.
         \rbuild - Builds the site and places it into 'dist' folder. Check implied.
         \rrun - Serves dist folder of the project, if the site is not built it calls build command.''')
+    
+    parser.add_argument(
+        '-i',
+        '--interactive',
+        action='store_true',
+        help="Sets interactive mode. Manual mode"
+    )
 
     args: Namespace = parser.parse_args()
 
@@ -125,4 +187,7 @@ if __name__ == "__main__":
             check_dirs()
             print("Check done")
         case "run":
-            run_dev_interactive()
+            if args.interactive:
+                run_dev_interactive()
+            else:
+                run_dev()
