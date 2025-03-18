@@ -11,19 +11,19 @@ class Timestamp:
         # Store (folder-name, timestamp)
         self._timestamps = {}
     
-    def get_locations(self):
-        print(self._timestamps)
-
-    
-    def scan_times(self):
+    # Updates timestamp dictionary
+    def update_times(self):
         for folder in ["html", "pages"]:
             for file in os.listdir(self._locations[folder]):
-                path = os.path.join(self._locations[folder], file)
-                self._timestamps[f"{folder}-{os.path.basename(file)}"] = os.path.getmtime(path)
+                if file != "__pycache__":
+                    path = os.path.join(self._locations[folder], file)
+                    self._timestamps[f"{folder}-{os.path.basename(file)}"] = os.path.getmtime(path)
     
-    def compare_times(self):
-        pass
-
-test_obj = Timestamp("skel")
-test_obj.scan_times()
-test_obj.get_locations()
+    # Compares timestamp and returns True if the timestamp is different
+    def compare_times(self) -> bool:
+        for folder in ["html", "pages"]:
+            for file in os.listdir(self._locations[folder]):
+                if file != "__pycache__":
+                    path = os.path.join(self._locations[folder], file)
+                    different = self._timestamps[f"{folder}-{os.path.basename(file)}"] != os.path.getmtime(path)
+                    return different

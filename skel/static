@@ -6,7 +6,7 @@
 import sys, multiprocessing, webbrowser, subprocess
 from argparse import ArgumentParser, Namespace
 from static_lib.stutils import print_shutdown, exists, is_empty
-from builder import site_build, check_dirs
+from builder import site_build, check_dirs, watch
 from static_server import (
     ADDRESS,
     PORT,
@@ -36,15 +36,15 @@ def build_site():
 # Starts a thread with the development server started on 'dist' folder
 # and opens the browser in the direction set in 'static_server'.
 # If the 'dist' files doesn't exists, it calls build_site
-def run_dev():
-    _daemon = multiprocessing.Process(
+def run_dev_interactive():
+    _server_daemon = multiprocessing.Process(
         target=serve,
         name="static-server",
         daemon=True
     )
 
     try:
-        _daemon.start()
+        _server_daemon.start()
     
         print(f'''Running web server...
                 \rALERT: this is a development server, don't use it for production!
@@ -79,23 +79,23 @@ def run_dev():
                     subprocess.call(["python3", "builder.py"])
 
                 case 'exit':
-                    _daemon.terminate()
-                    while _daemon.is_alive():
+                    _server_daemon.terminate()
+                    while _server_daemon.is_alive():
                         print_shutdown()
                     print("\n")
                     sys.exit(0)
                 case 'status':
-                    print(f'''Process {_daemon.name}:
-                        \rIs alive: {_daemon.is_alive()}.
-                        \rIs daemon: {_daemon.daemon}.
-                        \rPID: {_daemon.pid}.
+                    print(f'''Process {_server_daemon.name}:
+                        \rIs alive: {_server_daemon.is_alive()}.
+                        \rIs daemon: {_server_daemon.daemon}.
+                        \rPID: {_server_daemon.pid}.
                     ''')
                 case _:
                     print(f"{cli} is not recognized as a command.")
     except KeyboardInterrupt:
-        _daemon.terminate()
+        _server_daemon.terminate()
         print("\n")
-        while _daemon.is_alive():
+        while _server_daemon.is_alive():
             print_shutdown()
         print("\n")
         sys.exit(0)
@@ -125,4 +125,4 @@ if __name__ == "__main__":
             check_dirs()
             print("Check done")
         case "run":
-            run_dev()
+            run_dev_interactive()

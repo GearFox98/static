@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-import os, sys, shutil
+import os, sys, shutil, time
 from lxml import etree, html
 from static_lib.stutils import (
     exists,
     clear
     )
+from static_lib import registry
 from routes import build, ROUTES, HTML, BUILD_DIR
 
 # Checks directories in order to perform validation before building the site
@@ -86,6 +87,21 @@ def site_build() -> bool:
         return True
     else:
         return False
+
+def watch():
+    tstamp = registry.Timestamp(".")
+    tstamp.update_times()
+
+    if tstamp.compare_times():
+        print("Rebuilding...")
+        build()
+        if not compile():
+            copy_data()
+            print("Press F5 in your browser")
+        else:
+            print("Something went wrong")
+    
+    time.sleep(5)
 
 if __name__ == "__main__":
     success = site_build()
