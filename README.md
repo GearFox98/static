@@ -40,3 +40,6 @@ static [command]
 > **check**: checks the directory structure looking for missing directories. If there are some folders missing, this command will create them. The program stops if `html` or `pages` folders are not in the directory.<br /><br />
 > **build**: implies `check`, if there's no errors found, the program will generate the pages' content in a temporary folder and tailor the pieces in one file for each page in the `dist` folder.
 > **run** - Serves `dist` folder of the project, if the site is not built it calls `build` command.
+
+> #### **Options available:**
+> **-i, --interactive** - Sets interactive mode. Manual mode. Use with `run`
