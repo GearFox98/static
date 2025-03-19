@@ -50,7 +50,7 @@ def watch():
     except KeyboardInterrupt:
         print("\rWatcher stopped")
 
-def run_dev():
+def interactive_server():
     _server_daemon = multiprocessing.Process(
         target=serve,
         args=[True],
@@ -122,7 +122,9 @@ def static_server():
         _watch_daemon.start()
 
         print_server(ADDRESS, PORT)
+        webbrowser.open_new_tab(f"http://{ADDRESS}:{PORT}")
         serve(False)
+
     except KeyboardInterrupt:
         while _watch_daemon.is_alive():
             print_shutdown()
@@ -150,7 +152,7 @@ if __name__ == "__main__":
         '-i',
         '--interactive',
         action='store_true',
-        help="Sets interactive mode. Manual mode"
+        help="Sets interactive mode. Manual mode. Use with 'run'"
     )
 
     args: Namespace = parser.parse_args()
@@ -163,6 +165,6 @@ if __name__ == "__main__":
             print("Check done")
         case "run":
             if args.interactive:
-                pass
+                interactive_server()
             else:
                 static_server()
