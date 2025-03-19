@@ -3,14 +3,16 @@
 # to work, don't mess here unless you know what you're
 # doing!
 
-import sys, multiprocessing, webbrowser, subprocess
+import sys, multiprocessing, webbrowser, subprocess, time
 from argparse import ArgumentParser, Namespace
 from static_lib.stutils import print_shutdown, exists, is_empty
-from builder import site_build, check_dirs, watch
+from builder import site_build, check_dirs
+from static_lib import registry
 from static_server import (
     ADDRESS,
     PORT,
-    serve
+    serve,
+    print_server
     )
 
 # Build the whole site, this performs the directory checks,
@@ -35,35 +37,31 @@ def build_site():
 
 # region Services
 # Services implemented by the interface of static tool
-# --------------------
-# Interactive services will provide a CLI to perform manual
-# builds and status check in the server service.
-# Static services will run unattended builds
-# --------------------
-# region Interactive
-# Starts a thread with the development server started on 'dist' folder
-# and opens the browser in the direction set in 'static_server'.
-# If the 'dist' files doesn't exists, it calls build_site.
-# Interactive mode
-def run_dev_interactive():
+def watch():
+    try:
+        tstamp = registry.Timestamp(".")
+        tstamp.update_times()
+        while True:
+            if tstamp.compare_times():
+                print("Rebuilding...")
+                subprocess.call(["python3", "builder.py"])
+                tstamp.update_times()
+            time.sleep(5)
+    except KeyboardInterrupt:
+        print("\rWatcher stopped")
+
+def run_dev():
     _server_daemon = multiprocessing.Process(
         target=serve,
         args=[True],
-        name="static-server-int",
+        name="static_server",
         daemon=True
     )
 
     try:
         _server_daemon.start()
     
-        print(f'''Running web server...
-                \rALERT: this is a development server, don't use it for production!
-                \r---------------
-                \rListening on port {PORT}
-
-                \rOpen your browser in: http://{ADDRESS}:{PORT} if it didn't open automatically
-                \rHit CTRL+C to close the server.
-            ''')
+        print_server(ADDRESS, PORT)
         
         if not exists("dist") or is_empty("dist"):
             print("No dist made, building...")
@@ -113,48 +111,23 @@ def run_dev_interactive():
         sys.exit(0)
 # endregion
 
-# region Static
-def run_dev():
-    _server_daemon = multiprocessing.Process(
-        target=serve,
-        args=[False],
-        name="static-server",
-        daemon=True
-    )
+def static_server():
     _watch_daemon = multiprocessing.Process(
         target=watch,
-        name="static-watch",
+        name="static_watch",
         daemon=True
     )
 
-    try:  
-        print(f'''Running web server...
-                \rALERT: this is a development server, don't use it for production!
-                \r---------------
-                \rListening on port {PORT}
-
-                \rOpen your browser in: http://{ADDRESS}:{PORT} if it didn't open automatically
-                \rHit CTRL+C to close the server.
-            ''')
-        
-        if not exists("dist") or is_empty("dist"):
-            print("No dist made, building...")
-            subprocess.call(["python3", "builder.py"])
-        
-        _server_daemon.start()
+    try:
         _watch_daemon.start()
 
-        webbrowser.open_new_tab(f"http://{ADDRESS}:{PORT}")
-
-        
+        print_server(ADDRESS, PORT)
+        serve(False)
     except KeyboardInterrupt:
-        _server_daemon.terminate()
-        _watch_daemon.terminate()
-        print("\n")
-        while _server_daemon.is_alive() or _watch_daemon.is_alive():
+        while _watch_daemon.is_alive():
             print_shutdown()
-        print("\n")
-        sys.exit(0)
+            sys.exit(0)
+
 # endregion
     
 
@@ -190,6 +163,6 @@ if __name__ == "__main__":
             print("Check done")
         case "run":
             if args.interactive:
-                run_dev_interactive()
+                pass
             else:
-                run_dev()
+                static_server()

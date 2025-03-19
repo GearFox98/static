@@ -49,20 +49,23 @@ def serve(interactive: bool):
         if interactive:
             httpd = HTTPServer((ADDRESS, PORT), QuietHTTPRequestHandler)
         else:
-            httpd = HTTPServer((ADDRESS, PORT), StaticHTTPRequestHandler)
+            httpd = HTTPServer((ADDRESS, PORT), QuietHTTPRequestHandler)
         httpd.serve_forever()
     except KeyboardInterrupt:
         httpd.shutdown()
         print("\rServer closed")
         sys.exit(0)
 
-if __name__ == "__main__":
+def print_server(address, port):
     print(f'''Running web server...
-                \rALERT: this is a development server, don't use it for production!
-                \r---------------
-                \rListening on port {PORT}
+        \rALERT: this is a development server, don't use it for production!
+        \r---------------
+        \rListening on port {port}
 
-                \rOpen your browser in: http://{ADDRESS}:{PORT}
-                \rHit CTRL+C to close the server.
-            ''')
+        \rOpen your browser in: http://{address}:{port} if it didn't open automatically
+        \rHit CTRL+C to close the server.
+    ''')
+
+if __name__ == "__main__":
+    print_server(ADDRESS, PORT)
     serve(False)

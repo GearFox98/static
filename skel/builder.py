@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import os, sys, shutil, time
+import os, sys, shutil
 from lxml import etree, html
 from static_lib.stutils import (
     exists,
@@ -87,22 +87,6 @@ def site_build() -> bool:
         return True
     else:
         return False
-
-def watch():
-    while True:
-        tstamp = registry.Timestamp(".")
-        tstamp.update_times()
-
-        if tstamp.compare_times():
-            print("Rebuilding...")
-            build()
-            if not compile():
-                copy_data()
-                print("Press F5 in your browser")
-            else:
-                print("Something went wrong")
-        
-        time.sleep(5)
 
 if __name__ == "__main__":
     success = site_build()
