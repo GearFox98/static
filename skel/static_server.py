@@ -49,7 +49,7 @@ def serve(interactive: bool):
         if interactive:
             httpd = HTTPServer((ADDRESS, PORT), QuietHTTPRequestHandler)
         else:
-            httpd = HTTPServer((ADDRESS, PORT), QuietHTTPRequestHandler)
+            httpd = HTTPServer((ADDRESS, PORT), StaticHTTPRequestHandler)
         httpd.serve_forever()
     except KeyboardInterrupt:
         httpd.shutdown()

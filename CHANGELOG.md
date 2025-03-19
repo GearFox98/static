@@ -5,6 +5,9 @@
 > - Added a 404 - NotFound error page.
 > - Added interactive console wile debugging/testing
 > - Moved `stutils` file to `static_lib/stutils.py`
+> - Created `registry` in `static_lib` to store a timestamp class
+> - Implemented `watcher` function as a service to keep checking at modified files
+> - Redefined `static_server` functions to set a verbose server and a quiet one
 
 # Static ⚡
 ### 1.0-3 - Bootsrap offline
