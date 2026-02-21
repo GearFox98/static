@@ -1,4 +1,4 @@
-def get():
+def render():
     return '''
         <div class="container p-5">
             <div class="position-absolute top-50 start-50 translate-middle">

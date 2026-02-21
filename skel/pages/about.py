@@ -20,7 +20,7 @@ def cards(repeats):
     
     return cards
 
-def get():
+def render():
     return f'''
     <div class="container p-5">
         <h2>Static v1.0-3</h2>

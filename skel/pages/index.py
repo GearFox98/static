@@ -2,7 +2,7 @@ from static_lib.stutils import media
 
 var = "It works!"
 
-def get():
+def render():
     return f'''
     <div class="container py-5">
         <h1>{var}</h1>

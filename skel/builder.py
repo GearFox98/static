@@ -1,97 +1,182 @@
 #!/usr/bin/env python3
-
-import os, sys, shutil
+import os
+import shutil
+import importlib.util
+import sys
+import inspect
 from lxml import etree, html
-from static_lib.stutils import (
-    exists,
-    clear
-    )
-from static_lib import registry
-from routes import build, ROUTES, HTML, BUILD_DIR
 
-# Checks directories in order to perform validation before building the site
-def check_dirs() -> bool:
-    DIRS = ('build', 'dist', 'html', 'pages', 'data')
-    error = False
-    for d in DIRS:
-        if not exists(d):
-            os.mkdir(d)
-            match d:
-                case 'html':
-                    print("Warning: html directory is empty, make sure to provide a 'header.html' and 'footer.html' file")
-                    error = True
-                case 'pages':
-                    print("Info: the pages directory is empty, define some pages and link them in the 'routes.py' script")
-                    error = True
-                case _:
-                    print(f"Folder: {d} was created successfully")
-    return error
+# Configuración
+PAGES_DIR = "pages"
+HTML_DIR = "html"
+TEMPLATE_FILE = os.path.join(HTML_DIR, "template.html")
+DATA_DIR = "data"
+DIST_DIR = "dist"
+PLACEHOLDER = "{{CONTENT}}"
 
-# Prettify HTML code
-def prettify(src: str, dest: str):
-    source = open(src, "r")
-
-    _html = ""
-    for line in source.readlines():
-        _html = _html + line.strip(" ").strip("\t").strip("\n").strip(" ").strip("\t")
-    document_root = html.fromstring(_html)
-    pretty = etree.tostring(document_root, encoding='unicode', pretty_print=True)
-
-    source.close()
-
-    with open(dest, "a") as destiny:
-        destiny.write("<!DOCTYPE html>\n")
-        for line in pretty:
-            destiny.write(line)
-
-# Compile the whole site into dist folder
-def compile() -> bool:
-    # Clean dist files
-    for files in os.listdir("dist"):
-        clear(f"dist/{files}")
-
-    for _file in ROUTES:
-        with open(f"dist/{_file}", 'a') as stream:
-            for row in open(HTML.format("header")):
-                stream.write(row)
-
-            for row in open(BUILD_DIR.format(_file)):
-                stream.write(f"{row}")
-
-            for row in open(HTML.format("footer")):
-                stream.write(row)
-        prettify(f"dist/{_file}", f"dist/{_file}.html")
-        os.remove(f"dist/{_file}")
+def ensure_dirs():
+    """Verifica que existan los directorios obligatorios.
+    Devuelve True si hay error, False si todo correcto."""
+    required = [PAGES_DIR, HTML_DIR]
+    for d in required:
+        if not os.path.exists(d):
+            print(f"Error: La carpeta obligatoria '{d}' no existe.")
+            return True
+    # Verificar que exista template.html
+    if not os.path.exists(TEMPLATE_FILE):
+        print(f"Error: No se encuentra el archivo de plantilla '{TEMPLATE_FILE}'.")
+        return True
+    os.makedirs(DIST_DIR, exist_ok=True)
     return False
 
-# Copy static data into dist folder
-def copy_data():
-    SRC = "data"
-    DEST = "dist/data"
-    if exists(DEST):
-        source = os.listdir(SRC)
-        destination = os.listdir(DEST)
-        for obj in source:
-            if not obj in destination:
-                shutil.copytree(SRC, DEST, dirs_exist_ok=True)
-    else:
-        shutil.copytree(SRC, DEST, dirs_exist_ok=True)
+# Alias para compatibilidad con el script principal
+check_dirs = ensure_dirs
 
-def site_build() -> bool:
-    print("Checking dirs...")
-    check_dirs()
-    print("Building temporary files...")
-    build()
-    if not compile():
-        copy_data()
-        return True
+def load_module(module_path):
+    """Carga un módulo Python desde una ruta de archivo."""
+    spec = importlib.util.spec_from_file_location("module", module_path)
+    module = importlib.util.module_from_spec(spec) # type: ignore
+    spec.loader.exec_module(module) # type: ignore
+    return module
+
+def discover_pages():
+    """Encuentra todas las páginas en PAGES_DIR y sus subcarpetas.
+    Devuelve lista de (ruta_del_modulo, ruta_relativa_sin_extension)."""
+    pages = []
+    base_len = len(PAGES_DIR) + 1  # longitud de "pages/"
+    for root, _, files in os.walk(PAGES_DIR):
+        for file in files:
+            if file.endswith(".py") and not file.startswith("__"):
+                full_path = os.path.join(root, file)
+                # Ruta relativa sin extensión (ej. "blog/post1")
+                rel_path = full_path[base_len:-3]
+                pages.append((full_path, rel_path))
+    return pages
+
+def prettify_html(content):
+    """Embellece el HTML usando lxml."""
+    try:
+        root = html.fromstring(content)
+        return etree.tostring(root, encoding='unicode', pretty_print=True)
+    except Exception as e:
+        print(f"Error al procesar HTML: {e}")
+        return content
+
+def load_template():
+    """Lee el archivo template.html y devuelve su contenido."""
+    with open(TEMPLATE_FILE, "r", encoding="utf-8") as f:
+        return f.read()
+
+def load_context():
+    """Carga el contexto desde config.py y data/site.json."""
+    context = {}
+    # Cargar config.py si existe
+    config_path = os.path.join(os.path.dirname(__file__), "config.py")
+    if os.path.exists(config_path):
+        spec = importlib.util.spec_from_file_location("config", config_path)
+        config_module = importlib.util.module_from_spec(spec) # type: ignore
+        spec.loader.exec_module(config_module) # type: ignore
+        for key in dir(config_module):
+            if key.isupper():  # Solo variables en mayúsculas
+                context[key] = getattr(config_module, key)
+
+    # Cargar data/site.json si existe
+    site_json = os.path.join(DATA_DIR, "site.json")
+    if os.path.exists(site_json):
+        import json
+        with open(site_json, "r", encoding="utf-8") as f:
+            json_data = json.load(f)
+            context.update(json_data)
+
+    # Añadir utilidades (ejemplo: función para leer archivos desde data/)
+    def read_data_file(relative_path):
+        full_path = os.path.join(DATA_DIR, relative_path)
+        if os.path.exists(full_path):
+            with open(full_path, "r", encoding="utf-8") as f:
+                return f.read()
+        return None
+
+    context['read_data_file'] = read_data_file
+    return context
+
+def render_page(module_path, rel_path, context, template):
+    """Genera el HTML final para una página y lo guarda en dist/."""
+    module = load_module(module_path)
+    if not hasattr(module, "render"):
+        print(f"Advertencia: {module_path} no tiene función render(). Se omite.")
+        return
+
+    # Llamar a render con o sin contexto según la firma
+    sig = inspect.signature(module.render)
+    if len(sig.parameters) > 0:
+        page_content = module.render(context)
     else:
+        page_content = module.render()
+
+    # Reemplazar marcador en la plantilla
+    full_html = template.replace(PLACEHOLDER, page_content)
+
+    # Embellecer
+    full_html = prettify_html(full_html)
+
+    # Determinar ruta de salida (ej. "about" -> "dist/about.html")
+    output_file = os.path.join(DIST_DIR, rel_path + ".html")
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
+    with open(output_file, "w", encoding="utf-8") as f:
+        f.write(full_html)
+
+    print(f"Generado: {output_file}")
+
+def copy_static():
+    """Copia DATA_DIR a DIST_DIR/data."""
+    src = DATA_DIR
+    dst = os.path.join(DIST_DIR, "data")
+    if os.path.exists(src):
+        shutil.copytree(src, dst, dirs_exist_ok=True)
+        print(f"Archivos estáticos copiados a {dst}")
+
+def clean_dist():
+    """Limpia la carpeta dist."""
+    if os.path.exists(DIST_DIR):
+        shutil.rmtree(DIST_DIR)
+    os.makedirs(DIST_DIR)
+
+def site_build():
+    """Proceso principal de construcción. Devuelve True si éxito, False si error."""
+    try:
+        print("Verificando directorios...")
+        if ensure_dirs():
+            return False
+
+        print("Limpiando dist...")
+        clean_dist()
+
+        print("Cargando plantilla...")
+        template = load_template()
+
+        print("Cargando contexto...")
+        context = load_context()
+
+        print("Descubriendo páginas...")
+        pages = discover_pages()
+        if not pages:
+            print("No se encontraron páginas en 'pages/'.")
+            return False
+
+        print(f"Generando {len(pages)} páginas...")
+        for module_path, rel_path in pages:
+            render_page(module_path, rel_path, context, template)
+
+        print("Copiando archivos estáticos...")
+        copy_static()
+
+        print("¡Sitio construido con éxito!")
+        return True
+    except Exception as e:
+        print(f"Error durante la construcción: {e}")
         return False
 
 if __name__ == "__main__":
     success = site_build()
-    if success:
-        print("Done")
-    else:
-        print("There were some errors")
-    sys.exit(0)
+    sys.exit(0 if success else 1)
