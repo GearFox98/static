@@ -48,34 +48,35 @@ def prettify_html(html_content, indent=2):
         'button', 'label', 'select', 'option', 'textarea'
     }
     
-    # Expresión regular para encontrar etiquetas HTML (simplificada)
-    # Captura: grupos: 1 = etiqueta completa, 2 = nombre, 3 = atributos, 4 = tipo (cierre, apertura, autocierre)
+    # Regular expression to find HTML tags (simplified)
+    # Captures: groups: 1 = complete tag, 2 = name, 3 = attributes, 4 = type (closing, opening, self-closing)
     tag_pattern = re.compile(r'(<!--.*?-->)|(<(/?)([a-zA-Z0-9]+)([^>]*?)>)', re.DOTALL)
     
     lines = []
     indent_level = 0
+    pos = 0
     last_end = 0
     
-    # Función para agregar texto plano con indentación
+    # Function to add plain text with indentation
     def add_text(text):
         if text.strip():
             lines.append(' ' * (indent_level * indent) + text.strip())
-        elif text:  # línea vacía pero con espacios, la omitimos
+        elif text:  # empty line with spaces, we omit it
             pass
     
-    # Recorremos el HTML buscando etiquetas
+    # Walk through HTML looking for tags
     for match in tag_pattern.finditer(html_content):
         start, end = match.span()
-        # Texto antes de la etiqueta
+        # Text before the tag
         if start > last_end:
             text = html_content[last_end:start]
             if text.strip():
                 add_text(text)
         
-        # Procesar la etiqueta
-        comment, full_tag, slash, tag_name = match.groups()
+        # Process the tag
+        comment, full_tag, slash, tag_name, attrs = match.groups()
         if comment:
-            # Es un comentario, lo tratamos como bloque
+            # It's a comment, treat as block
             lines.append(' ' * (indent_level * indent) + comment.strip())
         else:
             tag_name = tag_name.lower()
@@ -83,22 +84,22 @@ def prettify_html(html_content, indent=2):
             is_self_close = full_tag.strip().endswith('/>') or tag_name in {'meta', 'link', 'br', 'hr', 'img', 'input'}
             
             if is_close:
-                # Etiqueta de cierre: disminuir indentación antes de escribir
+                # Closing tag: decrease indentation before writing
                 indent_level = max(0, indent_level - 1)
                 lines.append(' ' * (indent_level * indent) + full_tag)
             elif is_self_close:
-                # Etiqueta autocontenida (ej. <br/>)
+                # Self-closing tag (e.g., <br/>)
                 lines.append(' ' * (indent_level * indent) + full_tag)
             else:
-                # Etiqueta de apertura
+                # Opening tag
                 lines.append(' ' * (indent_level * indent) + full_tag)
-                # Si es una etiqueta de bloque, aumentamos indentación
+                # If it's a block tag, increase indentation
                 if tag_name in block_tags:
                     indent_level += 1
         
         last_end = end
     
-    # Texto restante después de la última etiqueta
+    # Remaining text after the last tag
     if last_end < len(html_content):
         text = html_content[last_end:]
         if text.strip():

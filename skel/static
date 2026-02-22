@@ -1,29 +1,20 @@
 #!/usr/bin/env python3
-# This file has the function definitions for the tool
-# to work, don't mess here unless you know what you're
-# doing!
-
-import sys, multiprocessing, webbrowser, subprocess, time
+import sys
+import multiprocessing
+import webbrowser
+import subprocess
+import time
 from argparse import ArgumentParser, Namespace
 from static_lib.stutils import print_shutdown, exists, is_empty
-from builder import site_build, check_dirs
+from builder import site_build, ensure_dirs
 from static_lib import registry
-from static_server import (
-    ADDRESS,
-    PORT,
-    serve,
-    print_server
-    )
+from static_lib.server import ADDRESS, PORT, serve, print_server
 
-# Build the whole site, this performs the directory checks,
-# generate the piece of HTML blocks form 'pages' dir,
-# lastly it sticks together the pages with the templates
+# ----------------------------------------------------------------------
+# Build command (unchanged)
 def build_site():
-    # Directory check and build
     print("Checking directories...")
-    error = check_dirs()
-
-    # Batch process
+    error = ensure_dirs()
     if error:
         print("Please, set up your files before building the site!")
         return
@@ -34,37 +25,21 @@ def build_site():
         else:
             print("There were some errors...")
 
-
-# region Services
-# Services implemented by the interface of static tool
-def watch():
-    try:
-        tstamp = registry.Timestamp(".")
-        tstamp.update_times()
-        while True:
-            if tstamp.compare_times():
-                print("Rebuilding...")
-                subprocess.call(["python3", "builder.py"])
-                tstamp.update_times()
-            time.sleep(5)
-    except KeyboardInterrupt:
-        print("\rWatcher stopped")
-
+# ----------------------------------------------------------------------
+# Interactive server (manual rebuilds, no auto-reload)
 def interactive_server():
     _server_daemon = multiprocessing.Process(
         target=serve,
-        args=[True],
+        args=[False],  # auto_reload=False → no script injection
         name="static_server",
         daemon=True
     )
-
     try:
         _server_daemon.start()
-    
         print_server(ADDRESS, PORT)
-        
+
         if not exists("dist") or is_empty("dist"):
-            print("No dist made, building...")
+            print("No dist found. Building...")
             subprocess.call(["python3", "builder.py"])
 
         webbrowser.open_new_tab(f"http://{ADDRESS}:{PORT}")
@@ -73,16 +48,15 @@ def interactive_server():
             \rEntering interactive console mode
             \r--------------------
             \rCommands:
-            \rrebuild - Once you have made changes in your files you might rebuild them and press F5 in the browser.
-            \rstatus - Shows the status of the server.
-            \rbrowser - Reopens the browser tab.
-            \rexit - Shutdown the session.
-            ''')
+            \rrebuild - Rebuild the site (then refresh the browser manually).
+            \rstatus  - Show server process status.
+            \rbrowser - Reopen the browser tab.
+            \rexit    - Shutdown the session.
+        ''')
 
         while True:
-            cli = str(input("[DEBUG⚡] > "))
-
-            match cli.lower():
+            cli = input("[DEBUG⚡] > ").strip().lower()
+            match cli:
                 case 'rebuild':
                     print("Rebuilding...")
                     subprocess.call(["python3", "builder.py"])
@@ -101,7 +75,7 @@ def interactive_server():
                         \rPID: {_server_daemon.pid}.
                     ''')
                 case _:
-                    print(f"{cli} is not recognized as a command.")
+                    print(f"Unknown command: {cli}")
     except KeyboardInterrupt:
         _server_daemon.terminate()
         print("\n")
@@ -109,62 +83,46 @@ def interactive_server():
             print_shutdown()
         print("\n")
         sys.exit(0)
-# endregion
 
-def static_server():
-    _watch_daemon = multiprocessing.Process(
-        target=watch,
-        name="static_watch",
-        daemon=True
-    )
+# ----------------------------------------------------------------------
+# Auto-reload server (default for 'run')
+def auto_reload_server():
+    # Build once if dist is missing/empty
+    if not exists("dist") or is_empty("dist"):
+        print("No dist found. Building site...")
+        site_build()
+    webbrowser.open_new_tab(f"http://{ADDRESS}:{PORT}")
+    serve(auto_reload=True)  # starts watcher thread and injecting handler
 
-    try:
-        _watch_daemon.start()
-
-        print_server(ADDRESS, PORT)
-        webbrowser.open_new_tab(f"http://{ADDRESS}:{PORT}")
-        serve(False)
-
-    except KeyboardInterrupt:
-        while _watch_daemon.is_alive():
-            print_shutdown()
-            sys.exit(0)
-
-# endregion
-    
-
-# CLI Prototype
+# ----------------------------------------------------------------------
+# CLI
 if __name__ == "__main__":
     parser = ArgumentParser(
         prog="Static",
-        usage="static <options>",
+        usage="static <command> [options]",
         description="Static site generator"
     )
     parser.add_argument(
         "command",
-        choices=["check","build","run"],
-        help='''Pass 'check' or 'build' arguments.\n
-        \rcheck - Checks if the project structure is correct, it generates the directories in case they're not.
-        \rbuild - Builds the site and places it into 'dist' folder. Check implied.
-        \rrun - Serves dist folder of the project, if the site is not built it calls build command.''')
-    
+        choices=["check", "build", "run"],
+        help="Command to execute"
+    )
     parser.add_argument(
-        '-i',
-        '--interactive',
+        '-i', '--interactive',
         action='store_true',
-        help="Sets interactive mode. Manual mode. Use with 'run'"
+        help="Run in interactive mode (manual rebuilds). Only with 'run'."
     )
 
-    args: Namespace = parser.parse_args()
+    args = parser.parse_args()
 
     match args.command:
         case "build":
             build_site()
         case "check":
-            check_dirs()
+            ensure_dirs()
             print("Check done")
         case "run":
             if args.interactive:
                 interactive_server()
             else:
-                static_server()
+                auto_reload_server()   # default: auto-reload
