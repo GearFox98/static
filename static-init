@@ -23,7 +23,7 @@ def get_bootstrap(path: str):
         print(round(block_num * block_size / total_size *100,2), end="\r")
 
     print("Getting Bootstrap...")
-    urllib.request.urlretrieve("https://github.com/twbs/bootstrap/releases/download/v5.3.3/bootstrap-5.3.3-dist.zip", f"{path}/bootstrap.zip", show_progress)
+    urllib.request.urlretrieve("https://github.com/twbs/bootstrap/releases/download/v5.3.8/bootstrap-5.3.8-dist.zip", f"{path}/bootstrap.zip", show_progress)
 
     print("Unpacking Bootstrap into data...")
     with ZipFile(f"{path}/bootstrap.zip", 'r') as ZIP:
@@ -31,12 +31,12 @@ def get_bootstrap(path: str):
     
     os.remove(f"{path}/bootstrap.zip")
 
-    with open(f"{path}/html/header.html", 'r') as stream:
+    with open(f"{path}/html/template.html", 'r') as stream:
         page = stream.readlines()
     
-    page[6] = '    <link href="data/bootstrap-5.3.3-dist/css/bootstrap.min.css" rel="stylesheet">'
+    page[8] = '    <link href="data/bootstrap-5.3.8-dist/css/bootstrap.min.css" rel="stylesheet">'
 
-    with open(f"{path}/html/header.html", 'w') as stream:
+    with open(f"{path}/html/template.html", 'w') as stream:
         stream.writelines(page)
 
 
