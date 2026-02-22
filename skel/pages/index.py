@@ -4,7 +4,7 @@ def render(context):
     return f'''
     <div class="container py-5">
         <div class="d-flex align-items-center gap-3">
-            <img src="/data/nikola.png" alt="Nikola" width="100" class="mb-4">
+            <img src="data/nikola.png" alt="Nikola" width="100" class="mb-4">
             <h1 class="m-0">{var}</h1>
         </div>
         <div class="text-muted m-1">
