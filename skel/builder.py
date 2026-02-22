@@ -4,7 +4,8 @@ import shutil
 import importlib.util
 import sys
 import inspect
-from lxml import etree, html
+
+from static_lib.stutils import prettify_html
 
 # Configuración
 PAGES_DIR = "pages"
@@ -52,15 +53,6 @@ def discover_pages():
                 rel_path = full_path[base_len:-3]
                 pages.append((full_path, rel_path))
     return pages
-
-def prettify_html(content):
-    """Embellece el HTML usando lxml."""
-    try:
-        root = html.fromstring(content)
-        return etree.tostring(root, encoding='unicode', pretty_print=True)
-    except Exception as e:
-        print(f"Error al procesar HTML: {e}")
-        return content
 
 def load_template():
     """Lee el archivo template.html y devuelve su contenido."""
