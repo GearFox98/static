@@ -118,7 +118,7 @@ def render_page(module_path, rel_path, context, template):
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(full_html)
 
-    print(f"Generated: {output_file}")
+    print(f"Generated: {output_file} ✔️")
 
 def copy_static():
     """Copy DATA_DIR to DIST_DIR/data."""
