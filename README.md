@@ -4,7 +4,9 @@ A static web site generator inspired by React and written in Python 🐍
 Static gives complete flexibility for building the site as it just focus on sew the pieces together. All you require is basic web programing skills and a bit of Python!
 
 ### Instalation
-Clone this repository and uncompress the program. Copy the 'skel' folder where you want to work and give 'static' execution permissions.
+Clone this repository, uncompress the program and add it to path, `static-init` will help you manage your new projects. Don't forget to set execution permissions!
+
+For manual usage: copy the `skel` folder where you want to work and give `static` execution permissions.
 
 #### Debian
 If you have a Debian-like distro installed, you can install the _DEB_ package, available [here](https://github.com/GearFox98/static/releases).
